@@ -51,10 +51,6 @@ func NewChip8() *Chip8 {
 	}
 
 	// Initialize the main function table
-	for i := range c.table0 {
-		c.table0[i] = c.OP_NULL
-	}
-
 	c.table[0x1] = c.OP_1NNN
 	c.table[0x2] = c.OP_2NNN
 	c.table[0x3] = c.OP_3XKK
@@ -69,6 +65,10 @@ func NewChip8() *Chip8 {
 	c.table[0xD] = c.OP_DXYN
 
 	// Initialize table0
+	for i := range c.table0 {
+		c.table0[i] = c.OP_NULL
+	}
+
 	c.table0[0x0] = c.OP_00E0
 	c.table0[0xE] = c.OP_00EE
 
