@@ -8,13 +8,52 @@ func (c *Chip8) FetchOpcode() uint16 {
 	return uint16(c.memory[c.pc])<<8 | uint16(c.memory[c.pc+1])
 }
 
-func (c *Chip8) OP_00E0() { //CLS
+func (c *Chip8) DecodeAndExecute(opcode uint16) {
+	switch opcode & 0xF000 {
+	case 0x0000:
+		c.table0[opcode&0x000F](opcode)
+	case 0x1000:
+		c.table[opcode>>12](opcode)
+	case 0x2000:
+		c.table[opcode>>12](opcode)
+	case 0x3000:
+		c.table[opcode>>12](opcode)
+	case 0x4000:
+		c.table[opcode>>12](opcode)
+	case 0x5000:
+		c.table[opcode>>12](opcode)
+	case 0x6000:
+		c.table[opcode>>12](opcode)
+	case 0x7000:
+		c.table[opcode>>12](opcode)
+	case 0x8000:
+		c.table8[opcode&0x000F](opcode)
+	case 0x9000:
+		c.table[opcode>>12](opcode)
+	case 0xA000:
+		c.table[opcode>>12](opcode)
+	case 0xB000:
+		c.table[opcode>>12](opcode)
+	case 0xC000:
+		c.table[opcode>>12](opcode)
+	case 0xD000:
+		c.table[opcode>>12](opcode)
+	case 0xE000:
+		c.tableE[opcode&0x000F](opcode)
+	case 0xF000:
+		c.tableF[opcode&0x00FF](opcode)
+	default:
+		c.OP_NULL(opcode)
+	}
+}
+
+func (c *Chip8) OP_00E0(opcode uint16) { //CLS
 	for i := range c.gfx {
 		c.gfx[i] = 0
 	}
 }
 
-func (c *Chip8) OP_00EE() { //RET
+func (c *Chip8) OP_00EE(opcode uint16) { //RET
 	c.pc = c.stack[c.sp]
 	c.sp--
 }
@@ -188,7 +227,7 @@ func (c *Chip8) OP_DXYN(opcode uint16) { //DRW Vx, Vy, nibble
 	y := (opcode & 0x00F0) >> 4
 	height := (opcode & 0x000F)
 
-	c.v[0xF] = 0 //Reset collision flag
+	c.v[0xF] = 0 //reset collision flag
 
 	for row := uint16(0); row < height; row++ {
 		spriteByte := c.memory[c.index+row]
@@ -203,7 +242,7 @@ func (c *Chip8) OP_DXYN(opcode uint16) { //DRW Vx, Vy, nibble
 			screenPixel := c.gfx[screenIndex]
 
 			if spritePixel == 1 && screenPixel == 1 {
-				c.v[0xF] = 1 //Collision happened
+				c.v[0xF] = 1 //collision happened
 			}
 
 			c.gfx[screenIndex] ^= spritePixel
@@ -247,7 +286,7 @@ func (c *Chip8) OP_FX0A(opcode uint16) { //LD Vx, K
 	}
 
 	if !keyPressed {
-		c.pc -= 2 //Redo the instruction until key pressed
+		c.pc -= 2 //redo the instruction until key pressed
 	}
 }
 
@@ -304,4 +343,8 @@ func (c *Chip8) OP_FX65(opcode uint16) { //LD Vx, [I]
 	for i := uint16(0); i <= x; i++ {
 		c.v[i] = c.memory[c.index+i]
 	}
+}
+
+func (c *Chip8) OP_NULL(opcode uint16) {
+	//no operation
 }
