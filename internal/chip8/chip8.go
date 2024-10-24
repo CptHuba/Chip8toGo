@@ -2,6 +2,8 @@ package chip8
 
 const START_ADDRESS = 0x200
 const FONTSET_START_ADDRESS = 0x50
+const VIDEO_WIDTH = 64
+const VIDEO_HEIGHT = 32
 
 var chip8FontSet = [80]byte{
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -23,16 +25,16 @@ var chip8FontSet = [80]byte{
 }
 
 type Chip8 struct {
-	memory     [4096]byte    //4K memory
-	v          [16]byte      //16 registers (V0-VF)
-	index      uint16        //index register
-	pc         uint16        //program counter
-	stack      [16]uint16    //16-level stack for pc
-	sp         byte          //stack pointer
-	delayTimer byte          //delay timer
-	soundTimer byte          //sound timer
-	key        [16]byte      //input key state
-	gfx        [64 * 32]byte //display (64x32)
+	memory     [4096]byte                       //4K memory
+	v          [16]byte                         //16 registers (V0-VF)
+	index      uint16                           //index register
+	pc         uint16                           //program counter
+	stack      [16]uint16                       //16-level stack for pc
+	sp         byte                             //stack pointer
+	delayTimer byte                             //delay timer
+	soundTimer byte                             //sound timer
+	key        [16]byte                         //input key state
+	gfx        [VIDEO_WIDTH * VIDEO_HEIGHT]byte //display (64x32)
 }
 
 func NewChip8() *Chip8 {
