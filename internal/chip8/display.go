@@ -54,8 +54,6 @@ func (d *Display) Update(cpu *Chip8) {
 		}
 		d.renderer.Present()
 	}
-
-	sdl.Delay(1000 / 60)
 }
 
 func (d *Display) CleanUp() {

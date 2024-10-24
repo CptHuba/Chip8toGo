@@ -124,6 +124,7 @@ func (c *Chip8) OP_8XY1(opcode uint16) { //OR Vx, Vy
 	y := (opcode & 0x00F0) >> 4
 
 	c.v[x] |= c.v[y]
+	c.v[0xF] = 0
 }
 
 func (c *Chip8) OP_8XY2(opcode uint16) { //AND Vx, Vy
@@ -131,6 +132,7 @@ func (c *Chip8) OP_8XY2(opcode uint16) { //AND Vx, Vy
 	y := (opcode & 0x00F0) >> 4
 
 	c.v[x] &= c.v[y]
+	c.v[0xF] = 0
 }
 
 func (c *Chip8) OP_8XY3(opcode uint16) { //XOR Vx, Vy
@@ -138,6 +140,7 @@ func (c *Chip8) OP_8XY3(opcode uint16) { //XOR Vx, Vy
 	y := (opcode & 0x00F0) >> 4
 
 	c.v[x] ^= c.v[y]
+	c.v[0xF] = 0
 }
 
 func (c *Chip8) OP_8XY4(opcode uint16) { //ADD Vx, Vy
@@ -172,9 +175,10 @@ func (c *Chip8) OP_8XY5(opcode uint16) { //SUB Vx, Vy
 
 func (c *Chip8) OP_8XY6(opcode uint16) { //SHR Vx, {, Vy}
 	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
 
 	carryBit := c.v[x] & 0x1
-
+	c.v[x] = c.v[y]
 	c.v[x] >>= 1
 
 	c.v[0xF] = carryBit
@@ -195,9 +199,11 @@ func (c *Chip8) OP_8XY7(opcode uint16) { //SUBN Vx, Vy
 
 func (c *Chip8) OP_8XYE(opcode uint16) { //SHL Vx, {, Vy}
 	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
 
 	carryBit := (c.v[x] & 0x80) >> 7
 
+	c.v[x] = c.v[y]
 	c.v[x] <<= 1
 
 	c.v[0xF] = carryBit
@@ -339,7 +345,8 @@ func (c *Chip8) OP_FX55(opcode uint16) { //LD [I], Vx
 	x := (opcode & 0x0F00) >> 8
 
 	for i := uint16(0); i <= x; i++ {
-		c.memory[c.index+i] = c.v[i]
+		c.memory[c.index] = c.v[i]
+		c.index++
 	}
 
 }
@@ -348,7 +355,8 @@ func (c *Chip8) OP_FX65(opcode uint16) { //LD Vx, [I]
 	x := (opcode & 0x0F00) >> 8
 
 	for i := uint16(0); i <= x; i++ {
-		c.v[i] = c.memory[c.index+i]
+		c.v[i] = c.memory[c.index]
+		c.index++
 	}
 }
 

@@ -51,6 +51,8 @@ func NewChip8() *Chip8 {
 		pc: 0x200,
 	}
 
+	c.loadFontSet()
+
 	//initialize the main function table
 	c.table[0x1] = c.OP_1NNN
 	c.table[0x2] = c.OP_2NNN
@@ -120,7 +122,7 @@ func (c *Chip8) LoadROM(rom []byte) {
 	}
 }
 
-func (c *Chip8) LoadFontSet() {
+func (c *Chip8) loadFontSet() {
 	for i, b := range chip8FontSet {
 		c.memory[FONTSET_START_ADDRESS+i] = b
 	}
