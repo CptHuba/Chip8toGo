@@ -19,4 +19,4 @@ Chip8toGo is a simple emulator for the CHIP-8 programming language, implemented 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/Chip8toGo.git
+   git clone https://github.com/CptHuba/Chip8toGo.git
