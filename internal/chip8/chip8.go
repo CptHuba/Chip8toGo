@@ -37,6 +37,7 @@ type Chip8 struct {
 	soundTimer byte         //sound timer
 	key        [16]byte     //input key state
 	gfx        [32][64]byte //display (64x32)
+	draw       bool
 
 	table  [16]OpcodeFunc  //main opcode table
 	table0 [16]OpcodeFunc  //table for opcodes starting with 0
@@ -143,4 +144,10 @@ func (c *Chip8) Cycle() {
 
 func (c *Chip8) Display() [32][64]byte {
 	return c.gfx
+}
+
+func (c *Chip8) Draw() bool {
+	temp := c.draw
+	c.draw = false
+	return temp
 }

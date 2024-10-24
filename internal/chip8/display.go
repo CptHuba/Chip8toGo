@@ -34,26 +34,27 @@ func NewDisplay(title string, width, height, videoScale int32) (*Display, error)
 }
 
 func (d *Display) Update(cpu *Chip8) {
-	vector := cpu.Display()
-	d.renderer.Clear()
-
-	for j := 0; j < 32; j++ {
-		for i := 0; i < 64; i++ {
-			if vector[j][i] != 0 {
-				d.renderer.SetDrawColor(255, 255, 255, 255)
-			} else {
-				d.renderer.SetDrawColor(0, 0, 0, 255)
+	if cpu.Draw() {
+		vector := cpu.Display()
+		d.renderer.Clear()
+		for j := 0; j < 32; j++ {
+			for i := 0; i < 64; i++ {
+				if vector[j][i] != 0 {
+					d.renderer.SetDrawColor(255, 255, 255, 255)
+				} else {
+					d.renderer.SetDrawColor(0, 0, 0, 255)
+				}
+				d.renderer.FillRect(&sdl.Rect{
+					X: int32(i) * d.videoScale,
+					Y: int32(j) * d.videoScale,
+					W: d.videoScale,
+					H: d.videoScale,
+				})
 			}
-			d.renderer.FillRect(&sdl.Rect{
-				X: int32(i) * d.videoScale,
-				Y: int32(j) * d.videoScale,
-				W: d.videoScale,
-				H: d.videoScale,
-			})
 		}
+		d.renderer.Present()
 	}
 
-	d.renderer.Present()
 	sdl.Delay(1000 / 60)
 }
 

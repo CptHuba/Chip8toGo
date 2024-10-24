@@ -53,6 +53,7 @@ func (c *Chip8) OP_00E0(opcode uint16) { //CLS
 			c.gfx[i][j] = 0
 		}
 	}
+	c.draw = true
 }
 
 func (c *Chip8) OP_00EE(opcode uint16) { //RET
@@ -145,55 +146,61 @@ func (c *Chip8) OP_8XY4(opcode uint16) { //ADD Vx, Vy
 
 	sum := uint16(c.v[x]) + uint16(c.v[y])
 
+	c.v[x] = byte(sum & 0xFF)
+
 	if sum > 255 {
 		c.v[0xF] = 1
 	} else {
 		c.v[0xF] = 0
 	}
-
-	c.v[x] = byte(sum & 0xFF)
 }
 
 func (c *Chip8) OP_8XY5(opcode uint16) { //SUB Vx, Vy
 	x := (opcode & 0x0F00) >> 8
 	y := (opcode & 0x00F0) >> 4
 
-	if c.v[x] > c.v[y] {
+	temp := c.v[x] >= c.v[y]
+
+	c.v[x] -= c.v[y]
+
+	if temp {
 		c.v[0xF] = 1
 	} else {
 		c.v[0xF] = 0
 	}
-
-	c.v[x] -= c.v[y]
 }
 
 func (c *Chip8) OP_8XY6(opcode uint16) { //SHR Vx, {, Vy}
 	x := (opcode & 0x0F00) >> 8
 
-	c.v[0xF] = c.v[x] & 0x1
+	carryBit := c.v[x] & 0x1
 
 	c.v[x] >>= 1
+
+	c.v[0xF] = carryBit
 }
 
 func (c *Chip8) OP_8XY7(opcode uint16) { //SUBN Vx, Vy
 	x := (opcode & 0x0F00) >> 8
 	y := (opcode & 0x00F0) >> 4
 
+	c.v[x] = c.v[y] - c.v[x]
+
 	if c.v[y] > c.v[x] {
 		c.v[0xF] = 1
 	} else {
 		c.v[0xF] = 0
 	}
-
-	c.v[x] = c.v[y] - c.v[x]
 }
 
 func (c *Chip8) OP_8XYE(opcode uint16) { //SHL Vx, {, Vy}
 	x := (opcode & 0x0F00) >> 8
 
-	c.v[0xF] = c.v[x] & 0x8
+	carryBit := (c.v[x] & 0x80) >> 7
 
 	c.v[x] <<= 1
+
+	c.v[0xF] = carryBit
 }
 
 func (c *Chip8) OP_9XY0(opcode uint16) { //SNE Vx, Vy
@@ -224,12 +231,12 @@ func (c *Chip8) OP_CXKK(opcode uint16) { //RND Vx, byte
 	c.v[x] = byte(rand.Intn(256)) & kk
 }
 
-func (c *Chip8) OP_DXYN(opcode uint16) { //DRW Vx, Vy, nibble
-	x := c.v[(opcode&0x0F00)>>8]
-	y := c.v[(opcode&0x00F0)>>4]
+func (c *Chip8) OP_DXYN(opcode uint16) { // DRW Vx, Vy, nibble
+	x := c.v[(opcode&0x0F00)>>8] % byte(VIDEO_WIDTH)
+	y := c.v[(opcode&0x00F0)>>4] % byte(VIDEO_HEIGHT)
 	height := (opcode & 0x000F)
 
-	c.v[0xF] = 0 //reset collision flag
+	c.v[0xF] = 0 // reset collision flag
 
 	for j := uint16(0); j < height; j++ {
 		spriteByte := c.memory[c.index+j]
@@ -237,14 +244,17 @@ func (c *Chip8) OP_DXYN(opcode uint16) { //DRW Vx, Vy, nibble
 		for i := uint16(0); i < 8; i++ {
 			spritePixel := spriteByte & (0x80 >> i)
 
-			if spritePixel != 0 {
-				if c.gfx[y+uint8(j)][x+uint8(i)] == 1 {
-					c.v[0xF] = 1 //collision happened
+			if y+uint8(j) < 32 && x+uint8(i) < 64 {
+				if spritePixel != 0 {
+					if c.gfx[y+uint8(j)][x+uint8(i)] == 1 {
+						c.v[0xF] = 1 // collision happened
+					}
+					c.gfx[y+uint8(j)][x+uint8(i)] ^= 1
 				}
-				c.gfx[y+uint8(j)][x+uint8(i)] ^= 1
 			}
 		}
 	}
+	c.draw = true
 }
 
 func (c *Chip8) OP_EX9E(opcode uint16) { //SKP Vx
