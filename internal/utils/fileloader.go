@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func loadROMFile(chip8 *chip8.Chip8, filename string) error {
+func LoadROMFile(chip8 *chip8.Chip8, filename string) error {
 	rom, err := os.ReadFile(filename)
 
 	if err != nil {

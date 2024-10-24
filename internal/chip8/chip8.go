@@ -2,8 +2,8 @@ package chip8
 
 const START_ADDRESS = 0x200
 const FONTSET_START_ADDRESS = 0x50
-const VIDEO_WIDTH = 64
-const VIDEO_HEIGHT = 32
+const VIDEO_WIDTH int32 = 64
+const VIDEO_HEIGHT int32 = 32
 
 var chip8FontSet = [80]byte{
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -27,16 +27,16 @@ var chip8FontSet = [80]byte{
 type OpcodeFunc func(opcode uint16)
 
 type Chip8 struct {
-	memory     [4096]byte                       //4K memory
-	v          [16]byte                         //16 registers (V0-VF)
-	index      uint16                           //index register
-	pc         uint16                           //program counter
-	stack      [16]uint16                       //16-level stack for pc
-	sp         byte                             //stack pointer
-	delayTimer byte                             //delay timer
-	soundTimer byte                             //sound timer
-	key        [16]byte                         //input key state
-	gfx        [VIDEO_WIDTH * VIDEO_HEIGHT]byte //display (64x32)
+	memory     [4096]byte   //4K memory
+	v          [16]byte     //16 registers (V0-VF)
+	index      uint16       //index register
+	pc         uint16       //program counter
+	stack      [16]uint16   //16-level stack for pc
+	sp         byte         //stack pointer
+	delayTimer byte         //delay timer
+	soundTimer byte         //sound timer
+	key        [16]byte     //input key state
+	gfx        [32][64]byte //display (64x32)
 
 	table  [16]OpcodeFunc  //main opcode table
 	table0 [16]OpcodeFunc  //table for opcodes starting with 0
@@ -50,7 +50,7 @@ func NewChip8() *Chip8 {
 		pc: 0x200,
 	}
 
-	// Initialize the main function table
+	//initialize the main function table
 	c.table[0x1] = c.OP_1NNN
 	c.table[0x2] = c.OP_2NNN
 	c.table[0x3] = c.OP_3XKK
@@ -64,7 +64,7 @@ func NewChip8() *Chip8 {
 	c.table[0xC] = c.OP_CXKK
 	c.table[0xD] = c.OP_DXYN
 
-	// Initialize table0
+	//initialize table0
 	for i := range c.table0 {
 		c.table0[i] = c.OP_NULL
 	}
@@ -72,7 +72,7 @@ func NewChip8() *Chip8 {
 	c.table0[0x0] = c.OP_00E0
 	c.table0[0xE] = c.OP_00EE
 
-	// Initialize table8
+	//initialize table8
 	for i := range c.table8 {
 		c.table8[i] = c.OP_NULL
 	}
@@ -87,7 +87,7 @@ func NewChip8() *Chip8 {
 	c.table8[0x7] = c.OP_8XY7
 	c.table8[0xE] = c.OP_8XYE
 
-	// Initialize tableE
+	//initialize tableE
 	for i := range c.tableE {
 		c.tableE[i] = c.OP_NULL
 	}
@@ -95,7 +95,7 @@ func NewChip8() *Chip8 {
 	c.tableE[0x1] = c.OP_EXA1
 	c.tableE[0xE] = c.OP_EX9E
 
-	// Initialize tableF
+	//initialize tableF
 	for i := range c.tableF {
 		c.tableF[i] = c.OP_NULL
 	}
@@ -128,13 +128,10 @@ func (c *Chip8) LoadFontSet() {
 func (c *Chip8) Cycle() {
 	opcode := c.FetchOpcode()
 
-	//increment PC
 	c.pc += 2
 
-	//decode and execute
 	c.DecodeAndExecute(opcode)
 
-	//decrement timers when set
 	if c.delayTimer > 0 {
 		c.delayTimer--
 	}
@@ -142,4 +139,8 @@ func (c *Chip8) Cycle() {
 	if c.soundTimer > 0 {
 		c.soundTimer--
 	}
+}
+
+func (c *Chip8) Display() [32][64]byte {
+	return c.gfx
 }

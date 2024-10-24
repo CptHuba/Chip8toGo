@@ -48,14 +48,16 @@ func (c *Chip8) DecodeAndExecute(opcode uint16) {
 }
 
 func (c *Chip8) OP_00E0(opcode uint16) { //CLS
-	for i := range c.gfx {
-		c.gfx[i] = 0
+	for i := 0; i < len(c.gfx); i++ {
+		for j := 0; j < len(c.gfx[i]); j++ {
+			c.gfx[i][j] = 0
+		}
 	}
 }
 
 func (c *Chip8) OP_00EE(opcode uint16) { //RET
-	c.pc = c.stack[c.sp]
 	c.sp--
+	c.pc = c.stack[c.sp]
 }
 
 func (c *Chip8) OP_1NNN(opcode uint16) { //JP addr
@@ -63,8 +65,8 @@ func (c *Chip8) OP_1NNN(opcode uint16) { //JP addr
 }
 
 func (c *Chip8) OP_2NNN(opcode uint16) { //CALL addr
-	c.sp++
 	c.stack[c.sp] = c.pc
+	c.sp++
 	c.pc = opcode & 0x0FFF
 }
 
@@ -223,29 +225,24 @@ func (c *Chip8) OP_CXKK(opcode uint16) { //RND Vx, byte
 }
 
 func (c *Chip8) OP_DXYN(opcode uint16) { //DRW Vx, Vy, nibble
-	x := (opcode & 0x0F00) >> 8
-	y := (opcode & 0x00F0) >> 4
+	x := c.v[(opcode&0x0F00)>>8]
+	y := c.v[(opcode&0x00F0)>>4]
 	height := (opcode & 0x000F)
 
 	c.v[0xF] = 0 //reset collision flag
 
-	for row := uint16(0); row < height; row++ {
-		spriteByte := c.memory[c.index+row]
+	for j := uint16(0); j < height; j++ {
+		spriteByte := c.memory[c.index+j]
 
-		for col := uint16(0); col < 8; col++ {
-			spritePixel := spriteByte & (0x80 >> byte(col))
+		for i := uint16(0); i < 8; i++ {
+			spritePixel := spriteByte & (0x80 >> i)
 
-			posX := (uint16(x) + col) % VIDEO_WIDTH
-			posY := (uint16(y) + row) % VIDEO_HEIGHT
-
-			screenIndex := posY*VIDEO_WIDTH + posX
-			screenPixel := c.gfx[screenIndex]
-
-			if spritePixel == 1 && screenPixel == 1 {
-				c.v[0xF] = 1 //collision happened
+			if spritePixel != 0 {
+				if c.gfx[y+uint8(j)][x+uint8(i)] == 1 {
+					c.v[0xF] = 1 //collision happened
+				}
+				c.gfx[y+uint8(j)][x+uint8(i)] ^= 1
 			}
-
-			c.gfx[screenIndex] ^= spritePixel
 		}
 	}
 }
