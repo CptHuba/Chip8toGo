@@ -7,6 +7,8 @@ import (
 
 	"Chip8toGo/internal/chip8"
 	"Chip8toGo/internal/utils"
+
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 func main() {
@@ -42,6 +44,7 @@ func main() {
 		cpu.Cycle()
 
 		display.Update(cpu)
+		sdl.Delay(2)
 	}
 
 }
