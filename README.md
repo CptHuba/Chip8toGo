@@ -20,20 +20,20 @@ Chip8toGo is a simple emulator for the CHIP-8 programming language, implemented 
 ### Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/CptHuba/Chip8toGo.git
-   cd Chip8toGo
-   ```
+```bash
+git clone https://github.com/CptHuba/Chip8toGo.git
+cd Chip8toGo
+```
 
 2. Install SDL2 development libraries:
-   ```bash
-      sudo apt-get install libsdl2-dev
-   ```
+```bash
+sudo apt-get install libsdl2-dev
+```
 
 3. Install Go dependencies:
-   ```bash
-   go mod tidy
-   ```
+```bash
+go mod tidy
+```
 
 ### Usage
 
