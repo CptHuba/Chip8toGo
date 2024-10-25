@@ -37,14 +37,32 @@ func main() {
 	}
 	defer display.CleanUp()
 
+	targetTimerHz := 60
+	targetCycleHz := 720
+	timerInterval := uint64(1000 / targetTimerHz)
+	cycleInterval := uint64(1000 / targetCycleHz)
+	lastTimerTime := sdl.GetTicks64()
+	lastCycleTime := sdl.GetTicks64()
+
 	quit := false
 
 	for !quit {
 		quit = chip8.ProcessInput(cpu)
-		cpu.Cycle()
 
-		display.Update(cpu)
-		sdl.Delay(2)
+		currentTime := sdl.GetTicks64()
+
+		if currentTime-lastCycleTime >= cycleInterval {
+			cpu.Cycle()
+			lastCycleTime = currentTime
+		}
+
+		if currentTime-lastTimerTime >= timerInterval {
+			cpu.UpdateTimers()
+			display.Update(cpu)
+			lastTimerTime = currentTime
+		}
+
+		sdl.Delay(1)
 	}
 
 }
