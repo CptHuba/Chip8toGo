@@ -26,6 +26,8 @@ func NewDisplay(title string, width, height, videoScale int32) (*Display, error)
 		return nil, err
 	}
 
+	sdl.GLSetSwapInterval(1)
+
 	return &Display{
 		window:     window,
 		renderer:   renderer,

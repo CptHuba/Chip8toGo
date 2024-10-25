@@ -135,6 +135,9 @@ func (c *Chip8) Cycle() {
 
 	c.DecodeAndExecute(opcode)
 
+}
+
+func (c *Chip8) UpdateTimers() {
 	if c.delayTimer > 0 {
 		c.delayTimer--
 	}
